@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Homework 8</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.7.0/moment.js"></script>
+    <link rel="stylesheet" type="text/css" href="hw8.css" />
+    <script src="hw8.js"></script>
+</head>
+
+<body>
+    <script>
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: 1197228950403359
+                , xfbml: true
+                , version: 'v2.8'
+            });
+            FB.AppEvents.logPageView();
+        };
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {
+                return;
+            }
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+    <div ng-app="myApp" ng-controller="myCtrl">
+        <div class="container-fluid container_fb">
+            <form name="myForm">
+                <div class="row">
+                    <div class="col-sm-3 fb_text_align_center"> FB Search </div>
+                    <div class="col-sm-6">
+                        <div class="input-group">
+                            <input name="myName" type="text" class="form-control change_radius" ng-model="searchValue" required placeholder="type something..." id="txt_search" onChange="removeCustomMessage()" />
+                            <div class="input-group-btn">
+                                <button class="btn btn-primary change_radius btn_width" ng-click="search()"> <span class="glyphicon glyphicon-search"></span> </button>
+                            </div> <span class="input-group-btn input-space">
+                    <button class="btn btn-default change_radius" type="button" onClick="makeClear()" ng-click="clearAll()">Clear</button>
+               </span> </div>
+                    </div>
+                    <div class="col-sm-3"> </div>
+                </div>
+                <!--<div> <span ng-show="myForm.myName.$touched && myForm.myName.$invalid">The name is required.</span></div>-->
+            </form>
+        </div>
+        <div class="add_bottom_margin">
+            <ul class="nav nav-justified" id="navigation">
+                <li><a ng-click="selectTab('users')">Users</a></li>
+                <li><a ng-click="selectTab('pages')">Pages</a></li>
+                <li><a ng-click="selectTab('events')">Events</a></li>
+                <li><a ng-click="selectTab('places')">Places</a></li>
+                <li><a ng-click="selectTab('groups')">Groups</a></li>
+                <li><a ng-click="selectTab('favorites')">Favorites</a></li>
+            </ul>
+        </div>
+        <script>
+            addListeners();
+        </script>
+        <div class="container-fluid" id="the_container" ng-class="{'move_main_page_class':!details}" style="display: none;" ng-hide="details">
+            <div id="Users" ng-show="users">
+                <!--ng-repeat for users-->
+                <div class="container-fluid" ng-hide="users_error">
+                    <div class="table-responsive">
+                        <table class="table table-hover no_margin_bottom">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Profile Photo</th>
+                                    <th>Name</th>
+                                    <th>Favorite</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="eachTuple in myResponse">
+                                    <td>{{$index+1}}</td>
+                                    <td> <img ng-src="{{ eachTuple.picture.data.url }}" height="30px" width="30px" ng-style="circle_style"></td>
+                                    <td>{{ eachTuple.name }}</td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="changeClassClick(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'User')"><span id="{{eachTuple.id}}" ng-class="getClass(eachTuple.id)"></span></button>
+                                    </td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="goToNextPage(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'User')"><span class="glyphicon glyphicon-menu-right"></span></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="container align_next_prev">
+                    <button type="button" class="btn btn-default next_button_padding prev_margin_right" ng-show="is_users_prev_present" ng-click="callPreviousUser()">Previous</button>
+                    <button type="button" class="btn btn-default next_button_padding" ng-show="is_users_next_present" ng-click="callNextUser()">Next</button>
+                </div>
+                <div class="all_errors" ng-show="users_error"> No records have been found </div>
+            </div>
+            <div id="Pages" ng-show="pages">
+                <div class="container-fluid" ng-hide="pages_error">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Profile Photo</th>
+                                    <th>Name</th>
+                                    <th>Favorite</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="eachTuple in myResponsePages">
+                                    <td>{{$index+1}}</td>
+                                    <td> <img ng-src="{{ eachTuple.picture.data.url }}" height="30px" width="30px" ng-style="circle_style"></td>
+                                    <td>{{ eachTuple.name }}</td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="changeClassClick(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'Page')"><span id="{{eachTuple.id}}" ng-class="getClass(eachTuple.id)"></span></button>
+                                    </td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="goToNextPage(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'Page')"><span class="glyphicon glyphicon-menu-right"></span></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="container align_next_prev">
+                    <button type="button" class="btn btn-default next_button_padding prev_margin_right" ng-show="is_pages_prev_present" ng-click="callPreviousPage()">Previous</button>
+                    <button type="button" class="btn btn-default next_button_padding" ng-show="is_pages_next_present" ng-click="callNextPage()">Next</button>
+                </div>
+                <div class="all_errors" ng-show="pages_error"> No records have been found </div>
+            </div>
+            <div id="Events" ng-show="events">
+                <div class="container-fluid" ng-hide="events_error">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Profile Photo</th>
+                                    <th>Name</th>
+                                    <th>Favorite</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="eachTuple in myResponseEvents">
+                                    <td>{{$index+1}}</td>
+                                    <td> <img ng-src="{{ eachTuple.picture.data.url }}" height="30px" width="30px" ng-style="circle_style"></td>
+                                    <td>{{ eachTuple.name }}</td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="changeClassClick(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'Event')"><span id="{{eachTuple.id}}" ng-class="getClass(eachTuple.id)"></span></button>
+                                    </td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="goToNextPage(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'Event')"><span class="glyphicon glyphicon-menu-right"></span></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="container align_next_prev">
+                    <button type="button" class="btn btn-default next_button_padding prev_margin_right" ng-show="is_events_prev_present" ng-click="callPreviousEvent()">Previous</button>
+                    <button type="button" class="btn btn-default next_button_padding" ng-show="is_events_next_present" ng-click="callNextEvent()">Next</button>
+                </div>
+                <div class="all_errors" ng-show="events_error"> No records have been found </div>
+            </div>
+            <div id="Places" ng-show="places">
+                <div class="container-fluid" ng-hide="places_error">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Profile Photo</th>
+                                    <th>Name</th>
+                                    <th>Favorite</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="eachTuple in myResponsePlaces">
+                                    <td>{{$index+1}}</td>
+                                    <td> <img ng-src="{{ eachTuple.picture.data.url }}" height="30px" width="30px" ng-style="circle_style"></td>
+                                    <td>{{ eachTuple.name }}</td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="changeClassClick(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'Place')"><span id="{{eachTuple.id}}" ng-class="getClass(eachTuple.id)"></span></button>
+                                    </td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="goToNextPage(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'Place')"><span class="glyphicon glyphicon-menu-right"></span></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="container align_next_prev">
+                    <button type="button" class="btn btn-default next_button_padding prev_margin_right" ng-show="is_places_prev_present" ng-click="callPreviousPlace()">Previous</button>
+                    <button type="button" class="btn btn-default next_button_padding" ng-show="is_places_next_present" ng-click="callNextPlace()">Next</button>
+                </div>
+                <div class="all_errors" ng-show="places_error"> No records have been found </div>
+            </div>
+            <div id="Groups" ng-show="groups">
+                <div class="container-fluid" ng-hide="groups_error">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Profile Photo</th>
+                                    <th>Name</th>
+                                    <th>Favorite</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="eachTuple in myResponseGroups">
+                                    <td>{{$index+1}}</td>
+                                    <td> <img ng-src="{{ eachTuple.picture.data.url }}" height="30px" width="30px" ng-style="circle_style"></td>
+                                    <td>{{ eachTuple.name }}</td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="changeClassClick(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'Group')"><span id="{{eachTuple.id}}" ng-class="getClass(eachTuple.id)"></span></button>
+                                    </td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="goToNextPage(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.picture.data.url,'Group')"><span class="glyphicon glyphicon-menu-right"></span></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="container align_next_prev">
+                    <button type="button" class="btn btn-default next_button_padding prev_margin_right" ng-show="is_groups_prev_present" ng-click="callPreviousGroups()">Previous</button>
+                    <button type="button" class="btn btn-default next_button_padding" ng-show="is_groups_next_present" ng-click="callNextGroups()">Next</button>
+                </div>
+                <div class="all_errors" ng-show="groups_error"> No records have been found </div>
+            </div>
+            <div id="Favorites" ng-show="favorites">
+                <div class="container-fluid" ng-hide="favorites_error">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="favTab">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Profile Photo</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Favorite</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="eachTuple in myResponseFavorites">
+                                    <td>{{$index+1}}</td>
+                                    <td> <img ng-src="{{eachTuple.imageUrl}}" height="30px" width="30px" ng-style="circle_style"></td>
+                                    <td>{{eachTuple.name}}</td>
+                                    <td>{{eachTuple.type}}</td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="deleteClick(eachTuple.id)"><span class="glyphicon glyphicon-trash"></span></button>
+                                    </td>
+                                    <td>
+                                        <button class="custom-white star-button favorite-detail-button" ng-click="goToNextPage(eachTuple.id, eachTuple.name, eachTuple.link, eachTuple.imageUrl,eachTuple.type)"><span class="glyphicon glyphicon-menu-right"></span></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="all_errors" ng-show="favorites_error"> No records have been found </div>
+            </div>
+        </div>
+        <div class="container" id="the_progress_bar_container" style="display:none;">
+            <div class="progress margin_top_progress_bar">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:60%"> </div>
+            </div>
+        </div>
+        <div id="details_container" ng-class="{'move_next_page_class':!details1}" style="display: none;" ng-hide="details1">
+            <div class="col-xs-12">
+                <div class="panel-group">
+                    <div class="panel panel-primary panel-borderless ">
+                        <div class="panel-body panel-body-change">
+                            <div class="btn-group">
+                                <button class="btn btn-default star-button black-class" ng-click="goToMainPage()"><span class="glyphicon glyphicon-menu-left pull-left span-button-padding"></span>Back</button>
+                            </div>
+                            <div class="btn-group pull-right">
+                                <div class="pull-right">
+                                    <button ng-click="changeClassClickDetails(detail_id, detail_name, detail_link, detail_imageUrl,detail_type)" class="btn btn-default start_button_margin star-button black-class"><span id="detailsStar" ng-class="getClass(detail_id)"></span></button>
+                                    <button ng-click="postToFaceBook()" class="btn btn-default change_button image_drawable_button star-button black-class"><img class="image_drawable" src="http://cs-server.usc.edu:45678/hw/hw8/images/facebook.png"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!----------------------------------------both panels go here--------------------------------->
+            <div class="container-fluid padding_40_top">
+                <div id="panel1" ng-class="getClassPanel1()">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Albums</div>
+                        <div class="panel-body">
+                            <!--------------------------------------------------------->
+                            <div class="panel-group" id="accordion">
+                                <!--------------------------------------------------------->
+                                <div ng-repeat="eachTuple in detail_albums_response" class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#adarsh-{{$index}}">{{eachTuple.name}}</a>
+        </h4> </div>
+                                    <div id="adarsh-{{$index}}" ng-class="getClassPanel($index)">
+                                        <div class="panel-body">
+                                            <div ng-repeat="imageshow in eachTuple.pictures"> <img class="img-responsive img-rounded" ng-src="{{imageshow}}" /> </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--------------------------------------------------------->
+                            </div>
+                            <!--------------------------------------------------------->
+                            <!-- ------lets put a progress bar here---------------------------->
+                            <div id="the_posts_progressbar" class="panel panel-default panel_progress_bar_change" ng-show="albums_progress_bar_show">
+                                <div class="panel-body">
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:60%"> </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="the_posts_progressbar" class="panel panel-default" ng-show="albums_error_show">
+                                <div class="panel-body error_message_no_data">
+                                    <div> No data found</div>
+                                </div>
+                            </div>
+                            <!------------progress bar ends here------------------------>
+                        </div>
+                    </div>
+                </div>
+                <div id="panel2" ng-class="getClassPanel2()">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Posts</div>
+                        <div class="panel-body">
+                            <!--------------------------------------------------------->
+                            <div class="panel-group" id="accordion">
+                                <!--------------------------------------------------------->
+                                <div ng-repeat="eachTuple in detail_posts_response" class="panel panel-default">
+                                    <div class="panel-body">
+                                        <div class="table-responsive remove_border_padding">
+                                            <table>
+                                                <tr>
+                                                    <td rowspan="2"><img class="posts-table-row" ng-src="{{ eachTuple.url }}"></td>
+                                                    <td>
+                                                        <p class="posts-column-1">{{ eachTuple.name }}</p>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <p class="posts-column-2">{{ eachTuple.time }}</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="margin-top-panel-content">{{eachTuple.post}}</div>
+                                    </div>
+                                </div>
+                                <!--------------------------------------------------------->
+                            </div>
+                            <!--------------------------------------------------------->
+                            <!-- ------lets put a progress bar here---------------------------->
+                            <div id="the_posts_progressbar" class="panel panel-default panel_progress_bar_change" ng-show="posts_progress_bar_show">
+                                <div class="panel-body">
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:60%"> </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="the_posts_progressbar" class="panel panel-default" ng-show="posts_error_show">
+                                <div class="panel-body error_message_no_data">
+                                    <div> No data found</div>
+                                </div>
+                            </div>
+                            <!------------progress bar ends here------------------------>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!----------------------------------------both panels end here--------------------------------->
+        </div>
+    </div>
+    <script>
+        callForAccodian();
+        callForWindowResize();
+    </script>
+</body>
+
+</html>
